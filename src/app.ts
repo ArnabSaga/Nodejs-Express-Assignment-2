@@ -6,6 +6,7 @@ import { userRoutes } from "./modules/users/user.route";
 import { authRoutes } from "./modules/auth/auth.route";
 
 import { errorHandler } from "./middleware/errorHandler";
+import { vehiclesRouter } from './modules/vehicles/vehicles.route';
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 
 //* Vehicles CRUD
+app.use("/api/v1/vehicles", vehiclesRouter);
 
 //* Bookings CRUD
 
