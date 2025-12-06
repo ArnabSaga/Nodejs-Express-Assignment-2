@@ -1,6 +1,6 @@
 import express from "express";
 
-import { vehicleControllers } from "./vehicles.controller";
+import { vehicleControllers } from "./vehicle.controller";
 
 import { authenticate } from "../../middleware/authMiddleware";
 import { authorize } from "../../middleware/authorize";
