@@ -6,7 +6,7 @@ const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password, phone, role } = req.body;
 
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !password || !phone || !role) {
       return res.status(400).json({
         success: false,
         message:
@@ -42,7 +42,7 @@ const signup = async (req: Request, res: Response) => {
 
     res.status(201).json({
       success: true,
-      message: "Login Successfully",
+      message: "User registered successfully",
       data: result.body.user,
     });
   } catch (err: any) {
@@ -68,7 +68,7 @@ const signin = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      message: "Login Successfully",
+      message: "Login successful",
       data: result,
     });
   } catch (err: any) {

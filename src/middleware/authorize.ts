@@ -2,18 +2,24 @@ import { Response, NextFunction } from "express";
 
 import { AuthRequest } from "./authMiddleware";
 
-export const authorize =
-  (...allowedRoles: string[]) =>
-  (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authorize = (...allowedRoles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+      return res.status(403).json({
+        success: false,
+        message: "Access Denied: User not authenticated.",
+      });
     }
 
-    if (allowedRoles.length === 0) return next();
+    const userRole = req.user.role;
 
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ success: false, message: "Forbidden" });
+    if (!allowedRoles.includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access Denied: Insufficient role permissions.",
+      });
     }
 
     next();
   };
+};

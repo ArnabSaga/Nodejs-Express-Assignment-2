@@ -28,10 +28,6 @@ const signup = async (Payload: {
     };
   }
 
-  if (password.length < 8) {
-    throw new Error("Password must be at least 8 characters long.");
-  }
-
   const hashPassword = await bcrypt.hash(password as string, 10);
 
   const result = await pool.query(
@@ -74,7 +70,7 @@ const signin = async (email: string, password: string) => {
   }
 
   const token = jwt.sign(
-    { name: user.name, email: user.email, role: user.role },
+    { id: user.id, name: user.name, email: user.email, role: user.role },
     config.jwtSecret as string,
     {
       expiresIn: "1d",
