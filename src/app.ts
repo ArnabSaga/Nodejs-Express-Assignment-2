@@ -2,7 +2,8 @@ import express, { Request, Response } from "express";
 
 import initDB, { pool } from "./config/db";
 
-import { userRoutes } from './modules/users/user.route';
+import { userRoutes } from "./modules/users/user.route";
+import { authRoutes } from "./modules/auth/auth.route";
 
 const app = express();
 
@@ -16,6 +17,9 @@ initDB();
 app.get("/", (req: Request, res: Response) => {
   res.send("Vehicle Rental System");
 });
+
+//* Auth CRUD
+app.use("/api/v1/auth", authRoutes);
 
 //* User CRUD
 app.use("/api/v1/users", userRoutes);
