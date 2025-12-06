@@ -5,6 +5,8 @@ import initDB, { pool } from "./config/db";
 import { userRoutes } from "./modules/users/user.route";
 import { authRoutes } from "./modules/auth/auth.route";
 
+import { errorHandler } from "./middleware/errorHandler";
+
 const app = express();
 
 //* Parse
@@ -29,12 +31,6 @@ app.use("/api/v1/users", userRoutes);
 //* Bookings CRUD
 
 //! Not found routes
-app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-    path: req.path,
-  });
-});
+app.use(errorHandler);
 
 export default app;
