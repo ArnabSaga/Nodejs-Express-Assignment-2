@@ -2,10 +2,13 @@ import { Request, Response } from "express";
 
 import { userServices } from "./user.service";
 
+import { AuthRequest } from "../../middleware/authMiddleware";
+
+/* 
 const createUser = async (req: Request, res: Response) => {
   try {
     const result = await userServices.createUser(req.body);
-
+    
     res.status(201).json({
       success: true,
       data: result.rows[0],
@@ -18,8 +21,9 @@ const createUser = async (req: Request, res: Response) => {
     });
   }
 };
+*/
 
-const getAllUser = async (req: Request, res: Response) => {
+const getAllUser = async (req: AuthRequest, res: Response) => {
   try {
     const result = await userServices.getAllUser();
 
@@ -36,10 +40,11 @@ const getAllUser = async (req: Request, res: Response) => {
   }
 };
 
+/* 
 const getSingleUser = async (req: Request, res: Response) => {
   try {
     const result = await userServices.getSingleUser(req.params.id as string);
-
+    
     if (result.rows.length === 0) {
       res.status(400).json({
         success: false,
@@ -47,21 +52,39 @@ const getSingleUser = async (req: Request, res: Response) => {
       });
     } else {
       res.status(200).json({
-        success: true,
-        message: "User fetched successfully",
-        data: result.rows[0],
-      });
-    }
-  } catch (err: any) {
-    res.status(500).json({
+    success: true,
+    message: "User fetched successfully",
+    data: result.rows[0],
+  });
+}
+} catch (err: any) {
+  res.status(500).json({
+    success: false,
+    message: err.message,
+    details: err,
+  });
+}
+};
+*/
+
+const updateUser = async (req: AuthRequest, res: Response) => {
+  const userIdToUpdate = req.params.id;
+  const authenticatedUser = req.user;
+
+  if (!authenticatedUser) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  const isOwner = authenticatedUser.id === userIdToUpdate;
+  const isAdmin = authenticatedUser.role === "admin";
+
+  if (!isOwner && !isAdmin) {
+    return res.status(403).json({
       success: false,
-      message: err.message,
-      details: err,
+      message: "Forbidden: You are not authorized to modify this profile.",
     });
   }
-};
 
-const updateUser = async (req: Request, res: Response) => {
   const { name, email, phone } = req.body;
 
   try {
@@ -73,7 +96,7 @@ const updateUser = async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      res.status(400).json({
+      res.status(404).json({
         success: false,
         message: "User not found",
       });
@@ -97,7 +120,7 @@ const deleteUser = async (req: Request, res: Response) => {
   try {
     const result = await userServices.deleteUser(req.params.id as string);
 
-    if (result.rowCount === 0) {
+    if ((result.rowCount ?? 0) === 0) {
       res.status(404).json({
         success: false,
         message: "User not found",
@@ -105,7 +128,7 @@ const deleteUser = async (req: Request, res: Response) => {
     } else {
       res.status(200).json({
         success: true,
-        message: "User deleted",
+        message: "User deleted successfully",
         data: result.rows,
       });
     }
@@ -119,9 +142,9 @@ const deleteUser = async (req: Request, res: Response) => {
 };
 
 export const userControllers = {
-  createUser,
+  // createUser,
   getAllUser,
-  getSingleUser,
+  // getSingleUser,
   updateUser,
   deleteUser,
 };
