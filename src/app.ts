@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 
-import initDB, { pool } from "./config/db";
+import initDB from "./config/db";
 
 import { userRoutes } from "./modules/user/user.route";
 import { authRoutes } from "./modules/auth/auth.route";
