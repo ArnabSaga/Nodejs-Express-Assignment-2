@@ -1,4 +1,5 @@
 import { pool } from "../../config/db";
+import bcrypt from "bcryptjs";
 
 const getAllUser = async () => {
   const result = await pool.query(
@@ -26,6 +27,7 @@ const updateUser = async (Payload: {
   if (email) queryFields.push(`email=$${counter++}`);
   if (phone) queryFields.push(`phone=$${counter++}`);
   if (role) queryFields.push(`role=$${counter++}`);
+  if (password) queryFields.push(`password=$${counter++}`);
 
   if (queryFields.length === 0) {
     return pool.query(
@@ -35,9 +37,13 @@ const updateUser = async (Payload: {
   }
 
   if (name) queryValues.push(name);
-  if (email) queryValues.push(email);
+  if (email) queryValues.push(String(email).toLowerCase());
   if (phone) queryValues.push(phone);
   if (role) queryValues.push(role);
+  if (password) {
+    const hashed = await bcrypt.hash(password as string, 10);
+    queryValues.push(hashed);
+  }
 
   queryValues.push(id);
 
@@ -52,7 +58,7 @@ const updateUser = async (Payload: {
 
 const deleteUser = async (id: string) => {
   const activeBookings = await pool.query(
-    `SELECT COUNT(*) FROM bookings WHERE user_id=$1 AND status = 'active'`,
+    `SELECT COUNT(*) FROM bookings WHERE customer_id=$1 AND status = 'active'`,
     [id]
   );
 

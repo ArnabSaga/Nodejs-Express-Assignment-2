@@ -28,6 +28,18 @@ const signup = async (Payload: {
     };
   }
 
+  const existsPhone = await pool.query(
+    `SELECT id FROM users WHERE phone = $1`,
+    [phone]
+  );
+
+  if ((existsPhone.rowCount ?? 0) > 0) {
+    return {
+      status: 409,
+      body: { success: false, message: "Phone number already exists" },
+    };
+  }
+
   const hashPassword = await bcrypt.hash(password as string, 10);
 
   const result = await pool.query(

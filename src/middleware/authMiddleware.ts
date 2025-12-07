@@ -33,11 +33,12 @@ export const authenticate = (
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret!) as {
-      id: string;
+      id: string | number;
       role: string;
     };
 
-    req.user = { id: decoded.id, role: decoded.role };
+    // normalize id to string to make downstream comparisons consistent
+    req.user = { id: String(decoded.id), role: decoded.role };
     next();
   } catch (err: any) {
     return res.status(401).json({ success: false, message: "Invalid token" });

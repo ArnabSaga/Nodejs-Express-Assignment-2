@@ -12,6 +12,10 @@ const createVehicle = async (req: Request, res: Response) => {
       data: result.rows[0],
     });
   } catch (err: any) {
+    if (err.message && err.message.startsWith("Validation:")) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+
     res.status(500).json({
       success: false,
       message: err.message,
@@ -24,14 +28,14 @@ const getAllVehicle = async (req: Request, res: Response) => {
     const result = await vehicleServices.getAllVehicle();
 
     if (!result.rows[0] || result.rows.length === 0) {
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "No vehicles found",
         data: [],
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Vehicles retrieved successfully",
       data: result.rows,
@@ -93,6 +97,10 @@ const updatedVehicle = async (req: Request, res: Response) => {
       });
     }
   } catch (err: any) {
+    if (err.message && err.message.startsWith("Validation:")) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+
     res.status(500).json({
       success: false,
       message: err.message,
@@ -106,18 +114,22 @@ const deleteVehicle = async (req: Request, res: Response) => {
       req.params.vehicleId as string
     );
 
+    if (result && "status" in result) {
+      return res.status(result.status).json(result.body);
+    }
+
     if ((result.rowCount ?? 0) === 0) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: "Vehicle not found",
       });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: "Vehicle deleted successfully",
-        data: result.rows.length > 0 ? result.rows : undefined,
-      });
     }
+
+    return res.status(200).json({
+      success: true,
+      message: "Vehicle deleted successfully",
+      data: result.rows.length > 0 ? result.rows : undefined,
+    });
   } catch (err: any) {
     res.status(500).json({
       success: false,

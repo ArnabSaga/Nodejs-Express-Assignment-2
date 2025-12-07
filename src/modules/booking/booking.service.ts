@@ -4,13 +4,17 @@ const daysBetween = (startDate: string, endDate: string) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  const diffTime = end.getTime() - start.getTime();
+  if (!(start instanceof Date) || isNaN(start.getTime())) return 0;
+  if (!(end instanceof Date) || isNaN(end.getTime())) return 0;
 
+  const diffTime = end.getTime() - start.getTime();
   const msPerDay = 24 * 60 * 60 * 1000;
 
-  const diffDays = Math.round(diffTime / msPerDay);
+  if (diffTime <= 0) return 0;
 
-  return diffDays > 0 ? diffDays : 1;
+  const diffDays = Math.ceil(diffTime / msPerDay);
+
+  return diffDays;
 };
 
 const createBooking = async (Payload: {
@@ -56,7 +60,7 @@ const createBooking = async (Payload: {
     await pool.query("ROLLBACK");
 
     return {
-      status: 404,
+      status: 400,
       body: { success: false, message: "Vehicle is not available" },
     };
   }
@@ -133,12 +137,31 @@ const getBooking = async (requestingUser: { id: string; role: string }) => {
       ORDER BY b.id DESC
       `);
 
+    // Map flat rows into nested customer and vehicle objects to match API reference
+    const data = result.rows.map((r: any) => ({
+      id: r.id,
+      customer_id: r.customer_id,
+      vehicle_id: r.vehicle_id,
+      rent_start_date: r.rent_start_date,
+      rent_end_date: r.rent_end_date,
+      total_price: r.total_price,
+      status: r.status,
+      customer: {
+        name: r.customer_name,
+        email: r.customer_email,
+      },
+      vehicle: {
+        vehicle_name: r.vehicle_name,
+        registration_number: r.registration_number,
+      },
+    }));
+
     return {
       status: 200,
       body: {
         success: true,
         message: "Bookings retrieved successfully",
-        data: result.rows,
+        data,
       },
     };
   } else {
@@ -153,12 +176,26 @@ const getBooking = async (requestingUser: { id: string; role: string }) => {
       [requestingUser.id]
     );
 
+    const data = result.rows.map((r: any) => ({
+      id: r.id,
+      vehicle_id: r.vehicle_id,
+      rent_start_date: r.rent_start_date,
+      rent_end_date: r.rent_end_date,
+      total_price: r.total_price,
+      status: r.status,
+      vehicle: {
+        vehicle_name: r.vehicle_name,
+        registration_number: r.registration_number,
+        type: r.type,
+      },
+    }));
+
     return {
       status: 200,
       body: {
         success: true,
         message: "Your bookings retrieved successfully",
-        data: result.rows,
+        data,
       },
     };
   }
