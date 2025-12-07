@@ -4,32 +4,13 @@ import { userServices } from "./user.service";
 
 import { AuthRequest } from "../../middleware/authMiddleware";
 
-/* 
-const createUser = async (req: Request, res: Response) => {
-  try {
-    const result = await userServices.createUser(req.body);
-    
-    res.status(201).json({
-      success: true,
-      data: result.rows[0],
-      message: "User are created successfully",
-    });
-  } catch (err: any) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
-*/
-
 const getAllUser = async (req: AuthRequest, res: Response) => {
   try {
     const result = await userServices.getAllUser();
 
     res.status(200).json({
       success: true,
-      message: "User retrieved successfully",
+      message: "Users retrieved successfully",
       data: result.rows,
     });
   } catch (err: any) {
@@ -39,33 +20,6 @@ const getAllUser = async (req: AuthRequest, res: Response) => {
     });
   }
 };
-
-/* 
-const getSingleUser = async (req: Request, res: Response) => {
-  try {
-    const result = await userServices.getSingleUser(req.params.id as string);
-    
-    if (result.rows.length === 0) {
-      res.status(400).json({
-        success: false,
-        message: "User not found",
-      });
-    } else {
-      res.status(200).json({
-    success: true,
-    message: "User fetched successfully",
-    data: result.rows[0],
-  });
-}
-} catch (err: any) {
-  res.status(500).json({
-    success: false,
-    message: err.message,
-    details: err,
-  });
-}
-};
-*/
 
 const updateUser = async (req: AuthRequest, res: Response) => {
   const userIdToUpdate = req.params.id;
@@ -85,15 +39,24 @@ const updateUser = async (req: AuthRequest, res: Response) => {
     });
   }
 
-  const { name, email, phone } = req.body;
+  const { name, email, phone, role, password } = req.body;
+
+  if (!isAdmin && role) {
+    return res.status(403).json({
+      success: false,
+      message: "Forbidden: Only an admin can change a user's role.",
+    });
+  }
 
   try {
-    const result = await userServices.updateUser(
+    const result = await userServices.updateUser({
       name,
       email,
       phone,
-      req.params.id as string
-    );
+      role,
+      password,
+      id: userIdToUpdate as string,
+    });
 
     if (result.rows.length === 0) {
       res.status(404).json({
@@ -111,27 +74,25 @@ const updateUser = async (req: AuthRequest, res: Response) => {
     res.status(500).json({
       success: false,
       message: err.message,
-      details: err,
+      details: err.constraint,
     });
   }
 };
 
-const deleteUser = async (req: Request, res: Response) => {
-  try {
-    const result = await userServices.deleteUser(req.params.id as string);
+const deleteUser = async (req: AuthRequest, res: Response) => {
+  const userIdToDelete = req.params.id as string;
 
-    if ((result.rowCount ?? 0) === 0) {
-      res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: "User deleted successfully",
-        data: result.rows,
-      });
+  try {
+    const result = await userServices.deleteUser(userIdToDelete);
+
+    if (result && "status" in result) {
+      return res.status(result.status).json(result.body);
     }
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
   } catch (err: any) {
     res.status(500).json({
       success: false,
@@ -142,9 +103,7 @@ const deleteUser = async (req: Request, res: Response) => {
 };
 
 export const userControllers = {
-  // createUser,
   getAllUser,
-  // getSingleUser,
   updateUser,
   deleteUser,
 };

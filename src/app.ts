@@ -2,11 +2,12 @@ import express, { Request, Response } from "express";
 
 import initDB, { pool } from "./config/db";
 
-import { userRoutes } from "./modules/users/user.route";
+import { userRoutes } from "./modules/user/user.route";
 import { authRoutes } from "./modules/auth/auth.route";
+import { vehiclesRouter } from "./modules/vehicle/vehicle.route";
+import { bookingsRouter } from "./modules/booking/booking.route";
 
 import { errorHandler } from "./middleware/errorHandler";
-import { vehiclesRouter } from './modules/vehicles/vehicles.route';
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/vehicles", vehiclesRouter);
 
 //* Bookings CRUD
+app.use("/api/v1/bookings", bookingsRouter);
 
 //! Not found routes
 app.use(errorHandler);

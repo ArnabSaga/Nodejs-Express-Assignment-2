@@ -9,14 +9,8 @@ const router = express.Router();
 
 const ADMIN = "admin";
 
-//* Create user CRUD
-// router.post("/", userControllers.createUser);
-
 //* Get ALl the user CRUD
 router.get("/", authenticate, authorize(ADMIN), userControllers.getAllUser);
-
-//* Get single the user CRUD
-// router.get("/:id", userControllers.getSingleUser);
 
 //* user update CRUD
 router.put("/:id", authenticate, userControllers.updateUser);
@@ -28,4 +22,5 @@ router.delete(
   authorize(ADMIN),
   userControllers.deleteUser
 );
+
 export const userRoutes = router;
